@@ -1,4 +1,6 @@
 import "dotenv/config";
+import { config } from "dotenv";
+import path from "path";
 import express from "express";
 import type { Express, Request, Response } from "express";
 import pluralize from "pluralize";
@@ -7,6 +9,9 @@ import { storeBill } from "./db/bills";
 import { searchItems } from "./db/items";
 import { healthCheck } from "./db/client";
 import type { BillSubmitRequest } from "./types";
+
+// Load environment variables from .env.local
+config({ path: path.resolve(process.cwd(), ".env.local") });
 
 const app: Express = express();
 const PORT = process.env.PORT || 3001;
@@ -179,5 +184,8 @@ app.use((err: any, _req: Request, res: Response) => {
 // Start server
 app.listen(PORT, () => {
   console.log(`Whee API server listening on port ${PORT}`);
+  const dbUrl = process.env.DATABASE_URL || "NOT SET";
+  const dbUrlMasked = dbUrl === "NOT SET" ? dbUrl : dbUrl.substring(0, 50) + "...";
+  console.log(`[DB] Database URL configured: ${dbUrlMasked}`);
 });
 
