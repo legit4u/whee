@@ -16,6 +16,7 @@ import {
 import { BillLineItem, BillStore } from "./types";
 import { BillLineItemForm } from "./BillLineItemForm";
 import { BillReviewScreen } from "./BillReviewScreen";
+import { BillSuccessScreen } from "./BillSuccessScreen";
 
 // Simple UUID generator (v4-ish)
 function generateId(): string {
@@ -50,7 +51,8 @@ export function ManualEntryScreen({
   const [purchaseDate, setPurchaseDate] = useState(
     new Date().toISOString().split("T")[0]
   );
-  const [isReviewMode, setIsReviewMode] = useState(false);
+  const [mode, setMode] = useState<"entry" | "review" | "success">("entry");
+  const [successBillId, setSuccessBillId] = useState<string>("");
 
   const addNewItem = () => {
     const newItem: BillLineItem = {
@@ -81,11 +83,28 @@ export function ManualEntryScreen({
       Alert.alert("Error", "Add at least one item before reviewing");
       return;
     }
-    setIsReviewMode(true);
+    setMode("review");
   };
 
+  const handleSubmitSuccess = (billId: string) => {
+    setSuccessBillId(billId);
+    setMode("success");
+  };
+
+  // Show success screen
+  if (mode === "success") {
+    return (
+      <BillSuccessScreen
+        billId={successBillId}
+        onDone={() => {
+          onSubmitSuccess(successBillId);
+        }}
+      />
+    );
+  }
+
   // Show review screen
-  if (isReviewMode) {
+  if (mode === "review") {
     return (
       <BillReviewScreen
         lineItems={lineItems}
@@ -95,8 +114,8 @@ export function ManualEntryScreen({
         onLineItemRemove={removeLineItem}
         onStoreUpdate={(name, lat, lng) => setStore({ name, lat, lng })}
         onDateUpdate={setPurchaseDate}
-        onSubmitSuccess={onSubmitSuccess}
-        onCancel={() => setIsReviewMode(false)}
+        onSubmitSuccess={handleSubmitSuccess}
+        onCancel={() => setMode("entry")}
         anonymousDeviceId={anonymousDeviceId}
       />
     );

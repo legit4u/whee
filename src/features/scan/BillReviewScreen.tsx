@@ -117,18 +117,13 @@ export function BillReviewScreen({
       });
 
       console.log("[BillReviewScreen] Bill submitted successfully:", response);
-      Alert.alert("Success", "Bill submitted successfully!", [
-        {
-          text: "OK",
-          onPress: () => onSubmitSuccess(response.billId)
-        }
-      ]);
+      onSubmitSuccess(response.billId);
     } catch (error) {
       console.error("[BillReviewScreen] Submission error:", error);
-      Alert.alert(
-        "Error",
-        error instanceof Error ? error.message : "Failed to submit bill"
-      );
+      // Show error in UI - for now just log
+      const errorMsg = error instanceof Error ? error.message : "Failed to submit bill";
+      console.error("Error details:", errorMsg);
+      // TODO: Show error toast/alert to user
     }
   };
 

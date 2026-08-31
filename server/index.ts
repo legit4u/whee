@@ -84,13 +84,17 @@ app.post("/v1/bills", (req: Request, res: Response) => {
       anonymousDeviceId
     } = req.body;
 
+    console.log("[POST /v1/bills] Received request body:", JSON.stringify(req.body, null, 2));
+
     // Validate required fields
     if (!storeName || !purchaseDate || !items || !anonymousDeviceId) {
+      console.log("[POST /v1/bills] Validation failed - missing fields");
       res.status(400).json({ error: "Missing required fields" });
       return;
     }
 
     if (!Array.isArray(items) || items.length === 0) {
+      console.log("[POST /v1/bills] Validation failed - invalid items array");
       res.status(400).json({ error: "Bill must contain at least one item" });
       return;
     }
@@ -117,10 +121,12 @@ app.post("/v1/bills", (req: Request, res: Response) => {
     console.log(`  Items: ${items.length}`);
     console.log(`  Total value: ₹${items.reduce((sum: number, item: any) => sum + (item.rawPrice || 0), 0).toFixed(2)}`);
 
-    res.json({
+    const responsePayload = {
       billId,
       pricePointIds
-    });
+    };
+    console.log("[POST /v1/bills] Sending response:", JSON.stringify(responsePayload));
+    res.json(responsePayload);
   } catch (error) {
     console.error("Error submitting bill:", error);
     res.status(500).json({ error: "Failed to submit bill" });
