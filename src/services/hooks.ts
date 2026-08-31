@@ -5,7 +5,7 @@
  * refetching, and error handling via React Query.
  */
 
-import { useQuery, useMutation, UseQueryResult, UseMutationResult } from "react-query";
+import { useQuery, useMutation, UseQueryResult, UseMutationResult, useQueryClient } from "react-query";
 import { apiCall, buildQueryString } from "./api";
 
 // ============================================================================
@@ -264,6 +264,8 @@ export function useSubmitBill(): UseMutationResult<
   Error,
   BillSubmitRequest
 > {
+  const queryClient = useQueryClient();
+
   return useMutation(
     async (bill: BillSubmitRequest) => {
       console.log("[useSubmitBill] Submitting bill payload:", bill);
@@ -271,6 +273,13 @@ export function useSubmitBill(): UseMutationResult<
         method: "POST",
         body: JSON.stringify(bill)
       });
+    },
+    {
+      onSuccess: () => {
+        console.log("[useSubmitBill] Bill submitted successfully, invalidating items cache");
+        // Invalidate items search cache to fetch updated items
+        queryClient.invalidateQueries(["items", "search"]);
+      }
     }
   );
 }
