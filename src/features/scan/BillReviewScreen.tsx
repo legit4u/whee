@@ -130,28 +130,70 @@ export function BillReviewScreen({
   };
 
   return (
-    <ScrollView className="flex-1 bg-white">
-      <View className="p-4">
-        {/* Header */}
-        <Text className="text-2xl font-bold mb-6">Review Your Bill</Text>
+    <ScrollView style={{ flex: 1, backgroundColor: "#ffffff" }}>
+      <View style={{ paddingVertical: 20, paddingHorizontal: 16 }}>
+        {/* Progress indicator */}
+        <View style={{ marginBottom: 24 }}>
+          <View style={{ flexDirection: "row", alignItems: "center" }}>
+            <View style={{ width: 28, height: 28, borderRadius: 14, backgroundColor: "#cbd5e1", justifyContent: "center", alignItems: "center" }}>
+              <Text style={{ color: "#64748b", fontWeight: "bold", fontSize: 14 }}>1</Text>
+            </View>
+            <View style={{ flex: 1, height: 2, backgroundColor: "#e2e8f0", marginHorizontal: 8 }} />
+            <View style={{ width: 28, height: 28, borderRadius: 14, backgroundColor: "#3b82f6", justifyContent: "center", alignItems: "center" }}>
+              <Text style={{ color: "white", fontWeight: "bold", fontSize: 14 }}>2</Text>
+            </View>
+          </View>
+          <View style={{ flexDirection: "row", justifyContent: "space-between", marginTop: 8 }}>
+            <Text style={{ fontSize: 12, fontWeight: "500", color: "#94a3b8" }}>Add Items</Text>
+            <Text style={{ fontSize: 12, fontWeight: "500", color: "#3b82f6" }}>Review & Store</Text>
+          </View>
+        </View>
 
-        {/* Store info */}
-        <View className="mb-6">
-          <Text className="text-lg font-semibold mb-3">Store Information</Text>
-          <View className="bg-slate-50 border border-slate-200 rounded-lg p-4">
-            <Text className="text-xs text-slate-600 mb-1">Store Name</Text>
+        {/* Header */}
+        <Text style={{ fontSize: 28, fontWeight: "bold", marginBottom: 8, color: "#1e293b" }}>
+          Review Your Bill
+        </Text>
+        <Text style={{ fontSize: 14, color: "#64748b", marginBottom: 24, lineHeight: 20 }}>
+          Verify the items and store details before submitting
+        </Text>
+
+        {/* Store information card */}
+        <View style={{ backgroundColor: "#ffffff", borderRadius: 12, padding: 16, marginBottom: 24, borderWidth: 1, borderColor: "#e2e8f0", shadowColor: "#000", shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.05, shadowRadius: 2, elevation: 2 }}>
+          <Text style={{ fontSize: 16, fontWeight: "600", color: "#1e293b", marginBottom: 16 }}>
+            Store Details
+          </Text>
+
+          {/* Store name */}
+          <View style={{ marginBottom: 14 }}>
+            <Text style={{ fontSize: 12, fontWeight: "600", color: "#475569", marginBottom: 6 }}>
+              Store Name *
+            </Text>
             <TextInput
               value={storeName}
               onChangeText={(text) => {
                 setStoreName(text);
                 onStoreUpdate(text, store.lat, store.lng);
               }}
-              placeholder="Enter store name"
+              placeholder="e.g., Big Bazaar, Dmart"
               placeholderTextColor="#cbd5e1"
-              className="bg-white border border-slate-200 rounded px-3 py-2 mb-3"
+              style={{
+                backgroundColor: "#f8fafc",
+                borderWidth: 1,
+                borderColor: storeName.trim() ? "#3b82f6" : "#e2e8f0",
+                borderRadius: 8,
+                paddingHorizontal: 12,
+                paddingVertical: 10,
+                fontSize: 14,
+                color: "#1e293b"
+              }}
             />
+          </View>
 
-            <Text className="text-xs text-slate-600 mb-1">Date</Text>
+          {/* Date */}
+          <View style={{ marginBottom: 0 }}>
+            <Text style={{ fontSize: 12, fontWeight: "600", color: "#475569", marginBottom: 6 }}>
+              Purchase Date *
+            </Text>
             <TextInput
               value={date}
               onChangeText={(text) => {
@@ -160,68 +202,125 @@ export function BillReviewScreen({
               }}
               placeholder="YYYY-MM-DD"
               placeholderTextColor="#cbd5e1"
-              className="bg-white border border-slate-200 rounded px-3 py-2"
+              style={{
+                backgroundColor: "#f8fafc",
+                borderWidth: 1,
+                borderColor: "#e2e8f0",
+                borderRadius: 8,
+                paddingHorizontal: 12,
+                paddingVertical: 10,
+                fontSize: 14,
+                color: "#1e293b"
+              }}
             />
+          </View>
 
-            {store.lat !== 0 && store.lng !== 0 && (
-              <Text className="text-xs text-slate-500 mt-2">
-                Location: {store.lat.toFixed(4)}, {store.lng.toFixed(4)}
+          {store.lat !== 0 && store.lng !== 0 && (
+            <View style={{ backgroundColor: "#f0fdf4", borderRadius: 8, padding: 10, marginTop: 12, borderLeftWidth: 4, borderLeftColor: "#10b981" }}>
+              <Text style={{ fontSize: 11, color: "#166534", fontWeight: "500" }}>
+                📍 Location: {store.lat.toFixed(4)}, {store.lng.toFixed(4)}
               </Text>
-            )}
+            </View>
+          )}
+        </View>
+
+        {/* Items section */}
+        <View style={{ marginBottom: 24 }}>
+          <Text style={{ fontSize: 16, fontWeight: "600", color: "#1e293b", marginBottom: 12 }}>
+            Items ({lineItems.length})
+          </Text>
+          <View style={{ gap: 12 }}>
+            {lineItems.map((item, index) => (
+              <View key={item.id} style={{ marginBottom: 0 }}>
+                <Text style={{ fontSize: 12, fontWeight: "600", color: "#64748b", marginBottom: 8 }}>
+                  Item {index + 1}
+                </Text>
+                <BillLineItemForm
+                  item={item}
+                  onUpdate={(updates) => onLineItemUpdate(item.id, updates)}
+                  onRemove={() => onLineItemRemove(item.id)}
+                  showRemoveButton={lineItems.length > 1}
+                />
+              </View>
+            ))}
           </View>
         </View>
 
-        {/* Line items */}
-        <View className="mb-6">
-          <Text className="text-lg font-semibold mb-3">Items ({lineItems.length})</Text>
-          {lineItems.map((item) => (
-            <BillLineItemForm
-              key={item.id}
-              item={item}
-              onUpdate={(updates) => onLineItemUpdate(item.id, updates)}
-              onRemove={() => onLineItemRemove(item.id)}
-              showRemoveButton={lineItems.length > 1}
-            />
-          ))}
-        </View>
-
-        {/* Summary */}
-        <View className="bg-green-50 border border-green-200 rounded-lg p-4 mb-6">
-          <Text className="text-sm font-semibold text-green-900 mb-2">
+        {/* Summary card */}
+        <View style={{ backgroundColor: "#eff6ff", borderRadius: 12, padding: 16, marginBottom: 24, borderLeftWidth: 4, borderLeftColor: "#3b82f6" }}>
+          <Text style={{ fontSize: 14, fontWeight: "600", color: "#1e40af", marginBottom: 12 }}>
             Summary
           </Text>
-          <Text className="text-sm text-green-900">
-            {lineItems.length} item{lineItems.length !== 1 ? "s" : ""} from{" "}
-            {storeName}
-          </Text>
-          <Text className="text-xs text-green-700 mt-2">
-            Total value: ₹
-            {lineItems
-              .reduce((sum, item) => sum + (item.rawPrice || 0), 0)
-              .toFixed(2)}
-          </Text>
+          <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
+            <Text style={{ fontSize: 13, color: "#1e40af" }}>
+              Items:
+            </Text>
+            <Text style={{ fontSize: 13, fontWeight: "600", color: "#1e40af" }}>
+              {lineItems.length} {lineItems.length === 1 ? "item" : "items"}
+            </Text>
+          </View>
+          <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
+            <Text style={{ fontSize: 13, color: "#1e40af" }}>
+              Store:
+            </Text>
+            <Text style={{ fontSize: 13, fontWeight: "600", color: "#1e40af" }}>
+              {storeName || "Not specified"}
+            </Text>
+          </View>
+          <View style={{ borderTopWidth: 1, borderTopColor: "#93c5fd", paddingTopY: 8, marginTopY: 8 }}>
+            <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
+              <Text style={{ fontSize: 14, fontWeight: "600", color: "#1e40af" }}>
+                Total Value:
+              </Text>
+              <Text style={{ fontSize: 16, fontWeight: "700", color: "#1e40af" }}>
+                ₹{lineItems.reduce((sum, item) => sum + (item.rawPrice || 0), 0).toFixed(2)}
+              </Text>
+            </View>
+          </View>
         </View>
 
         {/* Action buttons */}
-        <View className="flex-row gap-2 mb-6">
+        <View style={{ flexDirection: "row", gap: 12, marginBottom: 24 }}>
           <Pressable
             onPress={onCancel}
-            className="flex-1 bg-slate-200 rounded-lg p-4"
+            disabled={submitBillMutation.isLoading}
+            style={{
+              flex: 1,
+              backgroundColor: "#e2e8f0",
+              borderRadius: 8,
+              paddingVertical: 14,
+              justifyContent: "center",
+              alignItems: "center",
+              opacity: submitBillMutation.isLoading ? 0.5 : 1
+            }}
           >
-            <Text className="text-center text-slate-900 font-semibold">
-              Cancel
+            <Text style={{ textAlign: "center", color: "#1e293b", fontWeight: "600", fontSize: 16 }}>
+              ← Back
             </Text>
           </Pressable>
           <Pressable
             onPress={handleSubmit}
             disabled={submitBillMutation.isLoading}
-            className="flex-1 bg-blue-500 rounded-lg p-4"
+            style={{
+              flex: 1,
+              backgroundColor: "#10b981",
+              borderRadius: 8,
+              paddingVertical: 14,
+              justifyContent: "center",
+              alignItems: "center",
+              opacity: submitBillMutation.isLoading ? 0.7 : 1,
+              shadowColor: "#000",
+              shadowOffset: { width: 0, height: 2 },
+              shadowOpacity: 0.1,
+              shadowRadius: 3,
+              elevation: 3
+            }}
           >
             {submitBillMutation.isLoading ? (
               <ActivityIndicator color="white" />
             ) : (
-              <Text className="text-center text-white font-semibold">
-                Submit Bill
+              <Text style={{ textAlign: "center", color: "white", fontWeight: "600", fontSize: 16 }}>
+                ✓ Submit Bill
               </Text>
             )}
           </Pressable>
