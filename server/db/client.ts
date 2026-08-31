@@ -93,7 +93,14 @@ export async function healthCheck(): Promise<boolean> {
     const result = await query("SELECT 1");
     return result.rows.length > 0;
   } catch (error) {
-    console.error("[DB] Health check failed:", error);
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    const errorCode = (error as any)?.code;
+    console.error("[DB] Health check failed:");
+    console.error("  Code:", errorCode);
+    console.error("  Message:", errorMessage);
+    if ((error as any)?.hostname) {
+      console.error("  Hostname:", (error as any).hostname);
+    }
     return false;
   }
 }

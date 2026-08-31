@@ -1,6 +1,9 @@
-import "dotenv/config";
-import { config } from "dotenv";
+// Load environment variables FIRST, before any other imports
 import path from "path";
+import { config } from "dotenv";
+config({ path: path.resolve(process.cwd(), ".env.local") });
+
+import "dotenv/config";
 import express from "express";
 import type { Express, Request, Response } from "express";
 import pluralize from "pluralize";
@@ -9,9 +12,6 @@ import { storeBill } from "./db/bills";
 import { searchItems } from "./db/items";
 import { healthCheck } from "./db/client";
 import type { BillSubmitRequest } from "./types";
-
-// Load environment variables from .env.local
-config({ path: path.resolve(process.cwd(), ".env.local") });
 
 const app: Express = express();
 const PORT = process.env.PORT || 3001;
