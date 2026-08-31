@@ -333,6 +333,7 @@ export function BillReviewScreen({
             )}
           </Pressable>
         </View>
+        </View>
       </ScrollView>
     </KeyboardAvoidingView>
   );
