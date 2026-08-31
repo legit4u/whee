@@ -16,13 +16,37 @@ import {
 } from "react-native";
 import { BillLineItem } from "./types";
 import { getAllCategories, getCategory } from "@/src/lib/categories";
-import { CANONICAL_UNITS } from "@/src/lib/categories";
+import { CANONICAL_UNITS, normalize } from "@/src/lib/categories";
 
 interface BillLineItemFormProps {
   item: BillLineItem;
   onUpdate: (updates: Partial<BillLineItem>) => void;
   onRemove?: () => void;
   showRemoveButton?: boolean;
+}
+
+// Helper function to calculate normalized price
+function calculateNormalizedPrice(item: BillLineItem): Partial<BillLineItem> {
+  if (
+    !item.categoryId ||
+    item.rawQuantity === null ||
+    item.rawUnit === null ||
+    item.rawPrice === null
+  ) {
+    return { normalizedValue: null };
+  }
+
+  const result = normalize(
+    item.categoryId,
+    item.rawQuantity,
+    item.rawUnit,
+    item.rawPrice
+  );
+
+  return {
+    normalizedUnit: result.unit,
+    normalizedValue: result.value
+  };
 }
 
 export function BillLineItemForm({
@@ -34,6 +58,13 @@ export function BillLineItemForm({
   const [showCategoryPicker, setShowCategoryPicker] = useState(false);
   const selectedCategory = item.categoryId ? getCategory(item.categoryId) : null;
   const categories = getAllCategories();
+
+  // Handler for price field changes that recalculates normalized price
+  const handlePriceChange = (updates: Partial<BillLineItem>) => {
+    const newItem = { ...item, ...updates };
+    const normalized = calculateNormalizedPrice(newItem);
+    onUpdate({ ...updates, ...normalized });
+  };
 
   return (
     <View style={{ backgroundColor: "#ffffff", borderRadius: 12, padding: 16, marginBottom: 0, borderWidth: 1, borderColor: "#e2e8f0", shadowColor: "#000", shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.05, shadowRadius: 2, elevation: 2 }}>
@@ -85,6 +116,63 @@ export function BillLineItemForm({
           <Text style={{ fontSize: 18, color: "#94a3b8" }}>▼</Text>
         </Pressable>
       </View>
+
+      {/* Category picker modal */}
+      <Modal
+        visible={showCategoryPicker}
+        animationType="slide"
+        onRequestClose={() => setShowCategoryPicker(false)}
+      >
+        <View style={{ flex: 1, backgroundColor: "#ffffff" }}>
+          <View style={{ paddingHorizontal: 16, paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: "#e2e8f0", paddingTop: 20 }}>
+            <Text style={{ fontSize: 18, fontWeight: "bold", color: "#1e293b" }}>Select Category</Text>
+          </View>
+          <FlatList
+            data={categories}
+            keyExtractor={(cat) => cat.id}
+            renderItem={({ item: category }) => (
+              <Pressable
+                onPress={() => {
+                  const newItem = { ...item, categoryId: category.id };
+                  const normalized = calculateNormalizedPrice(newItem);
+                  onUpdate({ categoryId: category.id, ...normalized });
+                  setShowCategoryPicker(false);
+                }}
+                style={{
+                  paddingHorizontal: 16,
+                  paddingVertical: 12,
+                  borderBottomWidth: 1,
+                  borderBottomColor: "#f1f5f9",
+                  backgroundColor: selectedCategory?.id === category.id ? "#dbeafe" : "#ffffff"
+                }}
+              >
+                <Text style={{ fontSize: 16, color: "#1e293b", fontWeight: "500" }}>
+                  {category.label}
+                </Text>
+                <Text style={{ fontSize: 12, color: "#64748b", marginTop: 4 }}>
+                  {category.description}
+                </Text>
+              </Pressable>
+            )}
+          />
+          <Pressable
+            onPress={() => setShowCategoryPicker(false)}
+            style={{
+              backgroundColor: "#e2e8f0",
+              paddingVertical: 14,
+              marginHorizontal: 16,
+              marginVertical: 16,
+              borderRadius: 8,
+              justifyContent: "center",
+              alignItems: "center"
+            }}
+          >
+            <Text style={{ textAlign: "center", color: "#1e293b", fontWeight: "600", fontSize: 16 }}>
+              Close
+            </Text>
+          </Pressable>
+        </View>
+      </Modal>
 
       {/* Category picker modal */}
       <Modal
@@ -154,7 +242,7 @@ export function BillLineItemForm({
             <TextInput
               value={item.rawQuantity?.toString() ?? ""}
               onChangeText={(text) =>
-                onUpdate({ rawQuantity: text ? parseFloat(text) : null })
+                handlePriceChange({ rawQuantity: text ? parseFloat(text) : null })
               }
               placeholder="1"
               placeholderTextColor="#cbd5e1"
@@ -177,7 +265,7 @@ export function BillLineItemForm({
             </Text>
             <TextInput
               value={item.rawUnit ?? ""}
-              onChangeText={(text) => onUpdate({ rawUnit: text })}
+              onChangeText={(text) => handlePriceChange({ rawUnit: text })}
               placeholder="kg, L, pcs"
               placeholderTextColor="#cbd5e1"
               style={{
@@ -199,7 +287,7 @@ export function BillLineItemForm({
             <TextInput
               value={item.rawPrice?.toString() ?? ""}
               onChangeText={(text) =>
-                onUpdate({ rawPrice: text ? parseFloat(text) : null })
+                handlePriceChange({ rawPrice: text ? parseFloat(text) : null })
               }
               placeholder="100"
               placeholderTextColor="#cbd5e1"
