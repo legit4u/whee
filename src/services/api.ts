@@ -29,27 +29,37 @@ export async function apiCall<T>(
   options: RequestInit = {}
 ): Promise<T> {
   const url = `${API_BASE_URL}${endpoint}`;
+  
+  console.log(`[API] ${options.method || "GET"} ${url}`);
 
-  const headers: HeadersInit = {
-    "Content-Type": "application/json",
-    ...(options.headers || {})
-  };
-
-  const response = await fetch(url, {
-    ...options,
-    headers
-  });
-
-  if (!response.ok) {
-    const error: ApiError = {
-      message: `API error: ${response.statusText}`,
-      status: response.status
+  try {
+    const headers: HeadersInit = {
+      "Content-Type": "application/json",
+      ...(options.headers || {})
     };
+
+    const response = await fetch(url, {
+      ...options,
+      headers
+    });
+
+    if (!response.ok) {
+      const text = await response.text();
+      console.error(`[API] Error: ${response.status} ${response.statusText}`, text);
+      const error: ApiError = {
+        message: `API error: ${response.statusText}`,
+        status: response.status
+      };
+      throw error;
+    }
+
+    const data: T = await response.json();
+    console.log(`[API] Success:`, data);
+    return data;
+  } catch (error) {
+    console.error(`[API] Network error:`, error);
     throw error;
   }
-
-  const data: T = await response.json();
-  return data;
 }
 
 /**

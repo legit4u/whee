@@ -96,6 +96,7 @@ export function BillReviewScreen({
     if (!canSubmit()) return;
 
     try {
+      console.log("[BillReviewScreen] Submitting bill...");
       const response = await submitBillMutation.mutateAsync({
         storeName: storeName.trim(),
         storeLat: store.lat,
@@ -115,6 +116,7 @@ export function BillReviewScreen({
         anonymousDeviceId
       });
 
+      console.log("[BillReviewScreen] Bill submitted successfully:", response);
       Alert.alert("Success", "Bill submitted successfully!", [
         {
           text: "OK",
@@ -122,6 +124,7 @@ export function BillReviewScreen({
         }
       ]);
     } catch (error) {
+      console.error("[BillReviewScreen] Submission error:", error);
       Alert.alert(
         "Error",
         error instanceof Error ? error.message : "Failed to submit bill"

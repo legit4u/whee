@@ -250,10 +250,12 @@ export function useSubmitBill(): UseMutationResult<
   BillSubmitRequest
 > {
   return useMutation(
-    async (bill: BillSubmitRequest) =>
-      apiCall<BillSubmitResponse>("/v1/bills", {
+    async (bill: BillSubmitRequest) => {
+      console.log("[useSubmitBill] Submitting bill payload:", bill);
+      return apiCall<BillSubmitResponse>("/v1/bills", {
         method: "POST",
         body: JSON.stringify(bill)
-      })
+      });
+    }
   );
 }
