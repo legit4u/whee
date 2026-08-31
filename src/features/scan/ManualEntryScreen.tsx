@@ -273,6 +273,7 @@ export function ManualEntryScreen({
             </Text>
           </Pressable>
         </View>
+        </View>
       </ScrollView>
     </KeyboardAvoidingView>
   );
