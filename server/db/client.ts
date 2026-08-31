@@ -36,9 +36,22 @@ const connectionConfig = DB_URL
 // Connection pool
 const pool = new Pool(connectionConfig);
 
+console.log("[DB] Connection pool initialized");
+console.log("[DB] Config:", { 
+  connectionString: DB_URL ? "set" : "not set",
+  host: DB_HOST,
+  port: DB_PORT,
+  database: DB_NAME,
+  user: DB_USER ? "set" : "not set"
+});
+
 // Error handling
 pool.on("error", (err) => {
   console.error("[DB] Unexpected error on idle client", err);
+});
+
+pool.on("connect", () => {
+  console.log("[DB] Client connected to pool");
 });
 
 /**

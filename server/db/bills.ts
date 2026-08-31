@@ -6,6 +6,7 @@
  */
 
 import { randomUUID } from "crypto";
+import type { PoolClient } from "pg";
 import { query, getClient } from "./client";
 import { BillLineItem, BillSubmitResponse } from "../types";
 
@@ -21,9 +22,10 @@ export async function storeBill(
   items: BillLineItem[],
   anonymousDeviceId: string
 ): Promise<BillSubmitResponse> {
-  const client = await getClient();
-
+  let client: PoolClient | undefined;
+  
   try {
+    client = await getClient();
     await client.query("BEGIN");
     console.log("[DB] Transaction started for bill:", billId);
 
@@ -95,10 +97,12 @@ export async function storeBill(
     console.log(`[DB] Bill stored: ${billId} with ${pricePointIds.length} price points`);
     return { billId, pricePointIds };
   } catch (error) {
-    try {
-      await client.query("ROLLBACK");
-    } catch (rollbackError) {
-      console.error("[DB] Rollback failed:", rollbackError);
+    if (client) {
+      try {
+        await client.query("ROLLBACK");
+      } catch (rollbackError) {
+        console.error("[DB] Rollback failed:", rollbackError);
+      }
     }
     
     const errorMessage = error instanceof Error ? error.message : String(error);
@@ -118,7 +122,9 @@ export async function storeBill(
     
     throw new Error(`Database error: ${errorMessage}${errorDetail ? ` - ${errorDetail}` : ''}`);
   } finally {
-    client.release();
+    if (client) {
+      client.release();
+    }
   }
 }
 
