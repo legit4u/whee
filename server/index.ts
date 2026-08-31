@@ -7,6 +7,20 @@ const PORT = process.env.PORT || 3001;
 // Middleware
 app.use(express.json());
 
+// Enable CORS for all routes
+app.use((req: Request, res: Response, next) => {
+  res.header("Access-Control-Allow-Origin", "*");
+  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+  res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+  
+  if (req.method === "OPTIONS") {
+    res.sendStatus(200);
+    return;
+  }
+  
+  next();
+});
+
 // In-memory storage for testing (will be replaced with database)
 const bills: Map<string, any> = new Map();
 const categories = [
