@@ -6,8 +6,8 @@
  */
 
 import { randomUUID } from "crypto";
-import { query, getClient } from "./client";
-import { BillLineItem, BillSubmitResponse } from "../types";
+import { query, getClient } from "./client.ts";
+import { BillLineItem, BillSubmitResponse } from "../types.ts";
 
 /**
  * Store a bill and its price points
@@ -25,28 +25,35 @@ export async function storeBill(
 
   try {
     await client.query("BEGIN");
+    console.log("[DB] Transaction started for bill:", billId);
 
     // 1. Insert or get store
+    console.log("[DB] Inserting store:", storeName, `(${storeLat}, ${storeLng})`);
     const storeResult = await client.query(
       `INSERT INTO stores (name, location, geohash)
        VALUES ($1, ST_Point($2, $3), $4)
-       ON CONFLICT (name, ST_AsText(location)) DO UPDATE SET name = EXCLUDED.name
+       ON CONFLICT (name) DO UPDATE SET name = EXCLUDED.name
        RETURNING id`,
       [storeName, storeLng, storeLat, `${storeLat.toFixed(2)},${storeLng.toFixed(2)}`]
     );
     const storeId = storeResult.rows[0].id;
+    console.log("[DB] Store created/retrieved:", storeId);
 
     // 2. Insert bill
+    console.log("[DB] Inserting bill:", billId);
     await client.query(
       `INSERT INTO bills (id, store_id, purchase_date, anonymous_device_id, created_at)
        VALUES ($1, $2, $3, $4, NOW())`,
       [billId, storeId, purchaseDate, anonymousDeviceId]
     );
+    console.log("[DB] Bill inserted:", billId);
 
     // 3. Insert items and price points
     const pricePointIds: string[] = [];
 
     for (const item of items) {
+      console.log("[DB] Processing item:", item.itemName);
+      
       // Get or create item
       const itemResult = await client.query(
         `INSERT INTO items (category_id, name, created_at, updated_at)
@@ -56,6 +63,7 @@ export async function storeBill(
         [item.categoryId, item.itemName]
       );
       const itemId = itemResult.rows[0].id;
+      console.log("[DB] Item created/retrieved:", itemId, "for", item.itemName);
 
       // Insert price point
       const ppResult = await client.query(
@@ -78,15 +86,18 @@ export async function storeBill(
         ]
       );
       pricePointIds.push(ppResult.rows[0].id);
+      console.log("[DB] Price point inserted:", ppResult.rows[0].id);
     }
 
     await client.query("COMMIT");
+    console.log("[DB] Transaction committed for bill:", billId);
 
     console.log(`[DB] Bill stored: ${billId} with ${pricePointIds.length} price points`);
     return { billId, pricePointIds };
   } catch (error) {
     await client.query("ROLLBACK");
-    console.error("[DB] Error storing bill:", error);
+    console.error("[DB] Transaction rolled back due to error:", error);
+    console.error("[DB] Error details:", (error as any).message);
     throw error;
   } finally {
     client.release();

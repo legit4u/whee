@@ -31,7 +31,7 @@ ON CONFLICT (id) DO NOTHING;
 -- ============================================================================
 CREATE TABLE IF NOT EXISTS stores (
   id UUID PRIMARY KEY DEFAULT GEN_RANDOM_UUID(),
-  name TEXT NOT NULL,
+  name TEXT NOT NULL UNIQUE,
   location GEOGRAPHY(Point, 4326) NOT NULL,
   geohash TEXT NOT NULL,
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
@@ -51,11 +51,28 @@ CREATE TABLE IF NOT EXISTS items (
   name TEXT NOT NULL,
   aliases TEXT[] DEFAULT '{}',
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  UNIQUE (category_id, name)
 );
 
 CREATE INDEX IF NOT EXISTS idx_items_category ON items (category_id);
 CREATE INDEX IF NOT EXISTS idx_items_name ON items (name);
+
+-- ============================================================================
+-- Bills table
+-- Tracks submitted bills for historical reference
+-- ============================================================================
+CREATE TABLE IF NOT EXISTS bills (
+  id UUID PRIMARY KEY,
+  store_id UUID NOT NULL REFERENCES stores(id),
+  purchase_date DATE NOT NULL,
+  anonymous_device_id UUID NOT NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_bills_store ON bills (store_id);
+CREATE INDEX IF NOT EXISTS idx_bills_date ON bills (purchase_date);
+CREATE INDEX IF NOT EXISTS idx_bills_device ON bills (anonymous_device_id);
 
 -- ============================================================================
 -- Price points table

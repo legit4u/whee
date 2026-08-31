@@ -3,10 +3,10 @@ import express from "express";
 import type { Express, Request, Response } from "express";
 import pluralize from "pluralize";
 import { randomUUID } from "crypto";
-import { storeBill } from "./db/bills";
-import { searchItems } from "./db/items";
-import { healthCheck } from "./db/client";
-import type { BillSubmitRequest } from "./types";
+import { storeBill } from "./db/bills.ts";
+import { searchItems } from "./db/items.ts";
+import { healthCheck } from "./db/client.ts";
+import type { BillSubmitRequest } from "./types.ts";
 
 const app: Express = express();
 const PORT = process.env.PORT || 3001;
