@@ -93,6 +93,8 @@ export function BillLineItemForm({
           onChangeText={(text) => onUpdate({ itemName: text })}
           placeholder="e.g., Tomato, Milk, Eggs"
           placeholderTextColor="#cbd5e1"
+          returnKeyType="done"
+          onSubmitEditing={(e) => e.currentTarget.blur?.()}
           style={{
             backgroundColor: "#f8fafc",
             borderWidth: 1,
@@ -219,6 +221,8 @@ export function BillLineItemForm({
               placeholder="1"
               placeholderTextColor="#cbd5e1"
               keyboardType="decimal-pad"
+              returnKeyType="done"
+              onSubmitEditing={(e) => e.currentTarget.blur?.()}
               style={{
                 backgroundColor: "#f8fafc",
                 borderWidth: 1,
@@ -240,6 +244,8 @@ export function BillLineItemForm({
               onChangeText={(text) => handlePriceChange({ rawUnit: text })}
               placeholder="kg, L, pcs"
               placeholderTextColor="#cbd5e1"
+              returnKeyType="done"
+              onSubmitEditing={(e) => e.currentTarget.blur?.()}
               style={{
                 backgroundColor: "#f8fafc",
                 borderWidth: 1,
@@ -264,6 +270,8 @@ export function BillLineItemForm({
               placeholder="100"
               placeholderTextColor="#cbd5e1"
               keyboardType="decimal-pad"
+              returnKeyType="done"
+              onSubmitEditing={(e) => e.currentTarget.blur?.()}
               style={{
                 backgroundColor: "#f8fafc",
                 borderWidth: 1,

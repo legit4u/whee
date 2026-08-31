@@ -184,6 +184,8 @@ export function BillReviewScreen({
               }}
               placeholder="e.g., Big Bazaar, Dmart"
               placeholderTextColor="#cbd5e1"
+              returnKeyType="done"
+              onSubmitEditing={(e) => e.currentTarget.blur?.()}
               style={{
                 backgroundColor: "#f8fafc",
                 borderWidth: 1,
@@ -210,6 +212,8 @@ export function BillReviewScreen({
               }}
               placeholder="YYYY-MM-DD"
               placeholderTextColor="#cbd5e1"
+              returnKeyType="done"
+              onSubmitEditing={(e) => e.currentTarget.blur?.()}
               style={{
                 backgroundColor: "#f8fafc",
                 borderWidth: 1,
