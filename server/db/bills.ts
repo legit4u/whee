@@ -96,8 +96,16 @@ export async function storeBill(
     return { billId, pricePointIds };
   } catch (error) {
     await client.query("ROLLBACK");
-    console.error("[DB] Transaction rolled back due to error:", error);
-    console.error("[DB] Error details:", (error as any).message);
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    const errorCode = (error as any)?.code;
+    const errorDetail = (error as any)?.detail;
+    
+    console.error("[DB] Transaction rolled back due to error");
+    console.error("[DB] Error message:", errorMessage);
+    console.error("[DB] Error code:", errorCode);
+    console.error("[DB] Error detail:", errorDetail);
+    console.error("[DB] Full error:", error);
+    
     throw error;
   } finally {
     client.release();

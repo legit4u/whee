@@ -155,8 +155,14 @@ app.post("/v1/bills", async (req: Request, res: Response) => {
     console.log("[POST /v1/bills] Sending response:", JSON.stringify(response));
     res.json(response);
   } catch (error) {
-    console.error("Error submitting bill:", error);
-    res.status(500).json({ error: "Failed to submit bill" });
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    console.error("Error submitting bill:", errorMessage);
+    console.error("Full error:", error);
+    res.status(500).json({ 
+      error: "Failed to submit bill",
+      details: errorMessage,
+      code: (error as any)?.code || "UNKNOWN"
+    });
   }
 });
 

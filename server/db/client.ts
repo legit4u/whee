@@ -49,14 +49,19 @@ export async function query<T extends Record<string, any> = Record<string, any>>
   values?: (string | number | boolean | null | undefined)[]
 ): Promise<QueryResult<T>> {
   const start = Date.now();
+  let client;
   try {
-    const result = await pool.query<T>(text, values);
+    client = await pool.connect();
+    const result = await client.query<T>(text, values);
     const duration = Date.now() - start;
     console.log(`[DB] Executed query in ${duration}ms`, { rows: result.rowCount });
     return result;
   } catch (error) {
-    console.error("[DB] Query error:", error);
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    console.error("[DB] Query failed:", errorMessage);
     throw error;
+  } finally {
+    if (client) client.release();
   }
 }
 
