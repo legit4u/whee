@@ -41,6 +41,12 @@ export const CATEGORIES: Record<string, Category> = {
     canonicalUnit: CANONICAL_UNITS.PER_100G,
     description: "Packaged foods (rice, dal, flour, oil, etc.)"
   },
+  dairy: {
+    id: "dairy",
+    label: "Dairy",
+    canonicalUnit: CANONICAL_UNITS.PER_100ML,
+    description: "Milk, yogurt, cheese, and other dairy products"
+  },
   stationery: {
     id: "stationery",
     label: "Stationery",
