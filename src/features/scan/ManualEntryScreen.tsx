@@ -11,7 +11,9 @@ import {
   ScrollView,
   Pressable,
   TextInput,
-  Alert
+  Alert,
+  KeyboardAvoidingView,
+  Platform
 } from "react-native";
 import { BillLineItem, BillStore } from "./types";
 import { BillLineItemForm } from "./BillLineItemForm";
@@ -123,8 +125,16 @@ export function ManualEntryScreen({
 
   // Manual entry form
   return (
-    <ScrollView style={{ flex: 1, backgroundColor: "#ffffff" }}>
-      <View style={{ paddingVertical: 20, paddingHorizontal: 16 }}>
+    <KeyboardAvoidingView
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      style={{ flex: 1 }}
+    >
+      <ScrollView
+        style={{ flex: 1, backgroundColor: "#ffffff" }}
+        contentContainerStyle={{ flexGrow: 1 }}
+        keyboardShouldPersistTaps="always"
+      >
+        <View style={{ paddingVertical: 20, paddingHorizontal: 16 }}>
         {/* Progress indicator */}
         <View style={{ marginBottom: 20 }}>
           <View style={{ flexDirection: "row", alignItems: "center" }}>
@@ -263,8 +273,8 @@ export function ManualEntryScreen({
             </Text>
           </Pressable>
         </View>
-      </View>
-    </ScrollView>
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 }
 

@@ -13,7 +13,9 @@ import {
   Pressable,
   TextInput,
   Alert,
-  ActivityIndicator
+  ActivityIndicator,
+  KeyboardAvoidingView,
+  Platform
 } from "react-native";
 import { BillLineItem, BillStore } from "./types";
 import { BillLineItemForm } from "./BillLineItemForm";
@@ -128,8 +130,16 @@ export function BillReviewScreen({
   };
 
   return (
-    <ScrollView style={{ flex: 1, backgroundColor: "#ffffff" }}>
-      <View style={{ paddingVertical: 20, paddingHorizontal: 16 }}>
+    <KeyboardAvoidingView
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      style={{ flex: 1 }}
+    >
+      <ScrollView
+        style={{ flex: 1, backgroundColor: "#ffffff" }}
+        contentContainerStyle={{ flexGrow: 1 }}
+        keyboardShouldPersistTaps="always"
+      >
+        <View style={{ paddingVertical: 20, paddingHorizontal: 16 }}>
         {/* Progress indicator */}
         <View style={{ marginBottom: 24 }}>
           <View style={{ flexDirection: "row", alignItems: "center" }}>
@@ -323,7 +333,7 @@ export function BillReviewScreen({
             )}
           </Pressable>
         </View>
-      </View>
-    </ScrollView>
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 }

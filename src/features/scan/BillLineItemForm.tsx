@@ -59,6 +59,21 @@ export function BillLineItemForm({
   const selectedCategory = item.categoryId ? getCategory(item.categoryId) : null;
   const categories = getAllCategories();
 
+  // Handler for category keyboard selection
+  const handleCategoryKeyPress = (key: string) => {
+    const firstChar = key.toUpperCase();
+    const matchingCategory = categories.find(
+      (cat) => cat.label.toUpperCase().startsWith(firstChar)
+    );
+
+    if (matchingCategory) {
+      const newItem = { ...item, categoryId: matchingCategory.id };
+      const normalized = calculateNormalizedPrice(newItem);
+      onUpdate({ categoryId: matchingCategory.id, ...normalized });
+      setShowCategoryPicker(false);
+    }
+  };
+
   // Handler for price field changes that recalculates normalized price
   const handlePriceChange = (updates: Partial<BillLineItem>) => {
     const newItem = { ...item, ...updates };
@@ -125,8 +140,20 @@ export function BillLineItemForm({
       >
         <View style={{ flex: 1, backgroundColor: "#ffffff" }}>
           <View style={{ paddingHorizontal: 16, paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: "#e2e8f0", paddingTop: 20 }}>
-            <Text style={{ fontSize: 18, fontWeight: "bold", color: "#1e293b" }}>Select Category</Text>
+            <Text style={{ fontSize: 18, fontWeight: "bold", color: "#1e293b" }}>
+              Select Category (or type first letter)
+            </Text>
           </View>
+          {/* Hidden input to capture keyboard input */}
+          <TextInput
+            autoFocus
+            style={{ position: "absolute", width: 0, height: 0, opacity: 0 }}
+            onKeyPress={(e) => {
+              if (e.nativeEvent.key.length === 1) {
+                handleCategoryKeyPress(e.nativeEvent.key);
+              }
+            }}
+          />
           <FlatList
             data={categories}
             keyExtractor={(cat) => cat.id}
@@ -136,61 +163,6 @@ export function BillLineItemForm({
                   const newItem = { ...item, categoryId: category.id };
                   const normalized = calculateNormalizedPrice(newItem);
                   onUpdate({ categoryId: category.id, ...normalized });
-                  setShowCategoryPicker(false);
-                }}
-                style={{
-                  paddingHorizontal: 16,
-                  paddingVertical: 12,
-                  borderBottomWidth: 1,
-                  borderBottomColor: "#f1f5f9",
-                  backgroundColor: selectedCategory?.id === category.id ? "#dbeafe" : "#ffffff"
-                }}
-              >
-                <Text style={{ fontSize: 16, color: "#1e293b", fontWeight: "500" }}>
-                  {category.label}
-                </Text>
-                <Text style={{ fontSize: 12, color: "#64748b", marginTop: 4 }}>
-                  {category.description}
-                </Text>
-              </Pressable>
-            )}
-          />
-          <Pressable
-            onPress={() => setShowCategoryPicker(false)}
-            style={{
-              backgroundColor: "#e2e8f0",
-              paddingVertical: 14,
-              marginHorizontal: 16,
-              marginVertical: 16,
-              borderRadius: 8,
-              justifyContent: "center",
-              alignItems: "center"
-            }}
-          >
-            <Text style={{ textAlign: "center", color: "#1e293b", fontWeight: "600", fontSize: 16 }}>
-              Close
-            </Text>
-          </Pressable>
-        </View>
-      </Modal>
-
-      {/* Category picker modal */}
-      <Modal
-        visible={showCategoryPicker}
-        animationType="slide"
-        onRequestClose={() => setShowCategoryPicker(false)}
-      >
-        <View style={{ flex: 1, backgroundColor: "#ffffff" }}>
-          <View style={{ paddingHorizontal: 16, paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: "#e2e8f0", paddingTop: 20 }}>
-            <Text style={{ fontSize: 18, fontWeight: "bold", color: "#1e293b" }}>Select Category</Text>
-          </View>
-          <FlatList
-            data={categories}
-            keyExtractor={(cat) => cat.id}
-            renderItem={({ item: category }) => (
-              <Pressable
-                onPress={() => {
-                  onUpdate({ categoryId: category.id });
                   setShowCategoryPicker(false);
                 }}
                 style={{
