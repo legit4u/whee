@@ -77,20 +77,33 @@ export default function ItemsScreen() {
           </View>
         </View>
 
-        {/* Latest price point */}
+        {/* All price points */}
         {item.pricePoints.length > 0 && (
-          <View style={{ backgroundColor: "#f8fafc", borderRadius: 8, padding: 10, marginTop: 8 }}>
+          <View style={{ marginTop: 8, gap: 8 }}>
             <Text style={{ fontSize: 11, color: "#64748b", marginBottom: 4, fontWeight: "500" }}>
-              Latest
+              Price Points
             </Text>
-            <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
-              <Text style={{ fontSize: 13, fontWeight: "500", color: "#1e293b" }}>
-                ₹{item.pricePoints[0]?.normalizedValue.toFixed(2)} at {item.pricePoints[0]?.storeName}
-              </Text>
-              <Text style={{ fontSize: 10, color: "#94a3b8" }}>
-                {item.pricePoints[0]?.purchaseDate}
-              </Text>
-            </View>
+            {item.pricePoints.map((pp: any, idx: number) => (
+              <View
+                key={idx}
+                style={{
+                  backgroundColor: "#f8fafc",
+                  borderRadius: 8,
+                  padding: 10,
+                  borderLeftWidth: 3,
+                  borderLeftColor: idx === 0 ? "#3b82f6" : "#cbd5e1"
+                }}
+              >
+                <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
+                  <Text style={{ fontSize: 13, fontWeight: "500", color: "#1e293b" }}>
+                    ₹{pp.normalizedValue.toFixed(2)} at {pp.storeName}
+                  </Text>
+                  <Text style={{ fontSize: 10, color: "#94a3b8" }}>
+                    {pp.purchaseDate}
+                  </Text>
+                </View>
+              </View>
+            ))}
           </View>
         )}
       </Pressable>
