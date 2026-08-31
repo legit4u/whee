@@ -16,7 +16,7 @@ import {
 } from "react-native";
 import { BillLineItem } from "./types";
 import { getAllCategories, getCategory } from "@/src/lib/categories";
-import { CANONICAL_UNITS, normalize } from "@/src/lib/categories";
+import { normalize } from "@/src/lib/units";
 
 interface BillLineItemFormProps {
   item: BillLineItem;
