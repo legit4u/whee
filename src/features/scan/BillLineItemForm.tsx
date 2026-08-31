@@ -36,31 +36,55 @@ export function BillLineItemForm({
   const categories = getAllCategories();
 
   return (
-    <View className="border border-slate-200 rounded-lg p-4 mb-4 bg-white">
+    <View style={{ backgroundColor: "#ffffff", borderRadius: 12, padding: 16, marginBottom: 0, borderWidth: 1, borderColor: "#e2e8f0", shadowColor: "#000", shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.05, shadowRadius: 2, elevation: 2 }}>
       {/* Item name */}
-      <Text className="text-sm font-semibold text-slate-700 mb-2">Item Name</Text>
-      <TextInput
-        value={item.itemName}
-        onChangeText={(text) => onUpdate({ itemName: text })}
-        placeholder="e.g., Tomato, Milk"
-        placeholderTextColor="#cbd5e1"
-        className="bg-slate-50 border border-slate-200 rounded px-3 py-2 mb-4"
-      />
+      <View style={{ marginBottom: 16 }}>
+        <Text style={{ fontSize: 12, fontWeight: "600", color: "#475569", marginBottom: 6 }}>
+          Item Name *
+        </Text>
+        <TextInput
+          value={item.itemName}
+          onChangeText={(text) => onUpdate({ itemName: text })}
+          placeholder="e.g., Tomato, Milk, Eggs"
+          placeholderTextColor="#cbd5e1"
+          style={{
+            backgroundColor: "#f8fafc",
+            borderWidth: 1,
+            borderColor: "#e2e8f0",
+            borderRadius: 8,
+            paddingHorizontal: 12,
+            paddingVertical: 10,
+            fontSize: 14,
+            color: "#1e293b"
+          }}
+        />
+      </View>
 
       {/* Category picker */}
-      <Text className="text-sm font-semibold text-slate-700 mb-2">Category *</Text>
-      <Pressable
-        onPress={() => setShowCategoryPicker(true)}
-        className="bg-slate-50 border border-slate-200 rounded px-3 py-2 mb-4"
-      >
-        <Text
-          className={`${
-            selectedCategory ? "text-slate-900" : "text-slate-400"
-          }`}
-        >
-          {selectedCategory ? selectedCategory.label : "Select category..."}
+      <View style={{ marginBottom: 16 }}>
+        <Text style={{ fontSize: 12, fontWeight: "600", color: "#475569", marginBottom: 6 }}>
+          Category *
         </Text>
-      </Pressable>
+        <Pressable
+          onPress={() => setShowCategoryPicker(true)}
+          style={{
+            backgroundColor: "#f8fafc",
+            borderWidth: 1,
+            borderColor: selectedCategory ? "#3b82f6" : "#e2e8f0",
+            borderRadius: 8,
+            paddingHorizontal: 12,
+            paddingVertical: 12,
+            justifyContent: "space-between",
+            flexDirection: "row",
+            alignItems: "center"
+          }}
+        >
+          <Text style={{ color: selectedCategory ? "#1e293b" : "#94a3b8", fontSize: 14, fontWeight: "500" }}>
+            {selectedCategory ? selectedCategory.label : "Select category..."}
+          </Text>
+          <Text style={{ fontSize: 18, color: "#94a3b8" }}>▼</Text>
+        </Pressable>
+      </View>
 
       {/* Category picker modal */}
       <Modal
@@ -68,9 +92,9 @@ export function BillLineItemForm({
         animationType="slide"
         onRequestClose={() => setShowCategoryPicker(false)}
       >
-        <View className="flex-1 bg-white">
-          <View className="p-4 border-b border-slate-200">
-            <Text className="text-lg font-bold">Select Category</Text>
+        <View style={{ flex: 1, backgroundColor: "#ffffff" }}>
+          <View style={{ paddingHorizontal: 16, paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: "#e2e8f0", paddingTop: 20 }}>
+            <Text style={{ fontSize: 18, fontWeight: "bold", color: "#1e293b" }}>Select Category</Text>
           </View>
           <FlatList
             data={categories}
@@ -81,10 +105,18 @@ export function BillLineItemForm({
                   onUpdate({ categoryId: category.id });
                   setShowCategoryPicker(false);
                 }}
-                className="p-4 border-b border-slate-100"
+                style={{
+                  paddingHorizontal: 16,
+                  paddingVertical: 12,
+                  borderBottomWidth: 1,
+                  borderBottomColor: "#f1f5f9",
+                  backgroundColor: selectedCategory?.id === category.id ? "#dbeafe" : "#ffffff"
+                }}
               >
-                <Text className="text-slate-900">{category.label}</Text>
-                <Text className="text-xs text-slate-500">
+                <Text style={{ fontSize: 16, color: "#1e293b", fontWeight: "500" }}>
+                  {category.label}
+                </Text>
+                <Text style={{ fontSize: 12, color: "#64748b", marginTop: 4 }}>
                   {category.description}
                 </Text>
               </Pressable>
@@ -92,65 +124,108 @@ export function BillLineItemForm({
           />
           <Pressable
             onPress={() => setShowCategoryPicker(false)}
-            className="bg-slate-100 p-4 m-4 rounded"
+            style={{
+              backgroundColor: "#e2e8f0",
+              paddingVertical: 14,
+              marginHorizontal: 16,
+              marginVertical: 16,
+              borderRadius: 8,
+              justifyContent: "center",
+              alignItems: "center"
+            }}
           >
-            <Text className="text-center text-slate-900 font-semibold">
-              Cancel
+            <Text style={{ textAlign: "center", color: "#1e293b", fontWeight: "600", fontSize: 16 }}>
+              Close
             </Text>
           </Pressable>
         </View>
       </Modal>
 
-      {/* Price info (raw) */}
-      <Text className="text-sm font-semibold text-slate-700 mb-2">
-        Raw Price Details
-      </Text>
-      <View className="flex-row gap-2 mb-4">
-        <View className="flex-1">
-          <Text className="text-xs text-slate-600 mb-1">Qty</Text>
-          <TextInput
-            value={item.rawQuantity?.toString() ?? ""}
-            onChangeText={(text) =>
-              onUpdate({ rawQuantity: text ? parseFloat(text) : null })
-            }
-            placeholder="1"
-            placeholderTextColor="#cbd5e1"
-            keyboardType="decimal-pad"
-            className="bg-slate-50 border border-slate-200 rounded px-2 py-2"
-          />
-        </View>
-        <View className="flex-1">
-          <Text className="text-xs text-slate-600 mb-1">Unit</Text>
-          <TextInput
-            value={item.rawUnit ?? ""}
-            onChangeText={(text) => onUpdate({ rawUnit: text })}
-            placeholder="kg, l, piece"
-            placeholderTextColor="#cbd5e1"
-            className="bg-slate-50 border border-slate-200 rounded px-2 py-2"
-          />
-        </View>
-        <View className="flex-1">
-          <Text className="text-xs text-slate-600 mb-1">Price (₹)</Text>
-          <TextInput
-            value={item.rawPrice?.toString() ?? ""}
-            onChangeText={(text) =>
-              onUpdate({ rawPrice: text ? parseFloat(text) : null })
-            }
-            placeholder="100"
-            placeholderTextColor="#cbd5e1"
-            keyboardType="decimal-pad"
-            className="bg-slate-50 border border-slate-200 rounded px-2 py-2"
-          />
+      {/* Price details */}
+      <View style={{ marginBottom: 16 }}>
+        <Text style={{ fontSize: 12, fontWeight: "600", color: "#475569", marginBottom: 8 }}>
+          Price Details *
+        </Text>
+        <View style={{ flexDirection: "row", gap: 8 }}>
+          <View style={{ flex: 1 }}>
+            <Text style={{ fontSize: 11, color: "#64748b", marginBottom: 4, fontWeight: "500" }}>
+              Qty
+            </Text>
+            <TextInput
+              value={item.rawQuantity?.toString() ?? ""}
+              onChangeText={(text) =>
+                onUpdate({ rawQuantity: text ? parseFloat(text) : null })
+              }
+              placeholder="1"
+              placeholderTextColor="#cbd5e1"
+              keyboardType="decimal-pad"
+              style={{
+                backgroundColor: "#f8fafc",
+                borderWidth: 1,
+                borderColor: "#e2e8f0",
+                borderRadius: 8,
+                paddingHorizontal: 10,
+                paddingVertical: 9,
+                fontSize: 13,
+                color: "#1e293b"
+              }}
+            />
+          </View>
+          <View style={{ flex: 1 }}>
+            <Text style={{ fontSize: 11, color: "#64748b", marginBottom: 4, fontWeight: "500" }}>
+              Unit
+            </Text>
+            <TextInput
+              value={item.rawUnit ?? ""}
+              onChangeText={(text) => onUpdate({ rawUnit: text })}
+              placeholder="kg, L, pcs"
+              placeholderTextColor="#cbd5e1"
+              style={{
+                backgroundColor: "#f8fafc",
+                borderWidth: 1,
+                borderColor: "#e2e8f0",
+                borderRadius: 8,
+                paddingHorizontal: 10,
+                paddingVertical: 9,
+                fontSize: 13,
+                color: "#1e293b"
+              }}
+            />
+          </View>
+          <View style={{ flex: 1 }}>
+            <Text style={{ fontSize: 11, color: "#64748b", marginBottom: 4, fontWeight: "500" }}>
+              Price (₹)
+            </Text>
+            <TextInput
+              value={item.rawPrice?.toString() ?? ""}
+              onChangeText={(text) =>
+                onUpdate({ rawPrice: text ? parseFloat(text) : null })
+              }
+              placeholder="100"
+              placeholderTextColor="#cbd5e1"
+              keyboardType="decimal-pad"
+              style={{
+                backgroundColor: "#f8fafc",
+                borderWidth: 1,
+                borderColor: "#e2e8f0",
+                borderRadius: 8,
+                paddingHorizontal: 10,
+                paddingVertical: 9,
+                fontSize: 13,
+                color: "#1e293b"
+              }}
+            />
+          </View>
         </View>
       </View>
 
       {/* Normalized price display */}
       {item.normalizedValue !== null && (
-        <View className="bg-blue-50 border border-blue-200 rounded p-3 mb-4">
-          <Text className="text-xs font-semibold text-blue-900 mb-1">
-            Normalized Price
+        <View style={{ backgroundColor: "#eff6ff", borderRadius: 8, padding: 12, marginBottom: 16, borderLeftWidth: 4, borderLeftColor: "#3b82f6" }}>
+          <Text style={{ fontSize: 11, fontWeight: "600", color: "#1e40af", marginBottom: 4 }}>
+            ✓ Normalized Price
           </Text>
-          <Text className="text-sm text-blue-900">
+          <Text style={{ fontSize: 14, color: "#1e40af", fontWeight: "500" }}>
             ₹{item.normalizedValue.toFixed(2)} per {item.normalizedUnit}
           </Text>
         </View>
@@ -160,10 +235,18 @@ export function BillLineItemForm({
       {showRemoveButton && onRemove && (
         <Pressable
           onPress={onRemove}
-          className="bg-red-50 border border-red-200 rounded p-3"
+          style={{
+            backgroundColor: "#fee2e2",
+            borderRadius: 8,
+            paddingVertical: 10,
+            justifyContent: "center",
+            alignItems: "center",
+            borderWidth: 1,
+            borderColor: "#fca5a5"
+          }}
         >
-          <Text className="text-center text-red-600 font-semibold">
-            Remove Item
+          <Text style={{ color: "#dc2626", fontWeight: "600", fontSize: 14 }}>
+            ✕ Remove Item
           </Text>
         </Pressable>
       )}

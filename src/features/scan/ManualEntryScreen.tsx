@@ -104,79 +104,143 @@ export function ManualEntryScreen({
 
   // Manual entry form
   return (
-    <ScrollView className="flex-1 bg-white">
-      <View className="p-4">
-        {/* Header */}
-        <Text className="text-2xl font-bold mb-6">Add Items Manually</Text>
+    <ScrollView style={{ flex: 1, backgroundColor: "#ffffff" }}>
+      <View style={{ paddingVertical: 20, paddingHorizontal: 16 }}>
+        {/* Progress indicator */}
+        <View style={{ marginBottom: 20 }}>
+          <View style={{ flexDirection: "row", alignItems: "center" }}>
+            <View style={{ width: 28, height: 28, borderRadius: 14, backgroundColor: "#3b82f6", justifyContent: "center", alignItems: "center" }}>
+              <Text style={{ color: "white", fontWeight: "bold", fontSize: 14 }}>1</Text>
+            </View>
+            <View style={{ flex: 1, height: 2, backgroundColor: "#e2e8f0", marginHorizontal: 8 }} />
+            <View style={{ width: 28, height: 28, borderRadius: 14, backgroundColor: "#cbd5e1", justifyContent: "center", alignItems: "center" }}>
+              <Text style={{ color: "#64748b", fontWeight: "bold", fontSize: 14 }}>2</Text>
+            </View>
+          </View>
+          <View style={{ flexDirection: "row", justifyContent: "space-between", marginTop: 8 }}>
+            <Text style={{ fontSize: 12, fontWeight: "500", color: "#3b82f6" }}>Add Items</Text>
+            <Text style={{ fontSize: 12, fontWeight: "500", color: "#94a3b8" }}>Review & Store</Text>
+          </View>
+        </View>
 
-        {/* Quick store info (can edit later) */}
-        <View className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-6">
-          <Text className="text-xs text-blue-900">
-            ℹ️ Enter items below. You'll be able to set store name and date in
-            the next step.
+        {/* Header */}
+        <Text style={{ fontSize: 28, fontWeight: "bold", marginBottom: 8, color: "#1e293b" }}>
+          Add Items
+        </Text>
+        <Text style={{ fontSize: 14, color: "#64748b", marginBottom: 20, lineHeight: 20 }}>
+          Enter what you bought. You'll set the store and date on the next screen.
+        </Text>
+
+        {/* Quick tips */}
+        <View style={{ backgroundColor: "#dbeafe", borderRadius: 8, padding: 12, marginBottom: 24, borderLeftWidth: 4, borderLeftColor: "#3b82f6" }}>
+          <Text style={{ fontSize: 13, color: "#1e40af", fontWeight: "500" }}>
+            💡 Tip: Include quantity, unit (kg, piece, L), and price for each item
           </Text>
         </View>
 
-        {/* Add items section */}
-        <View className="mb-6">
-          <View className="flex-row justify-between items-center mb-4">
-            <Text className="text-lg font-semibold">Items ({lineItems.length})</Text>
+        {/* Items section */}
+        <View style={{ marginBottom: 24 }}>
+          <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
+            <View>
+              <Text style={{ fontSize: 16, fontWeight: "600", color: "#1e293b" }}>Items</Text>
+              <Text style={{ fontSize: 13, color: "#64748b", marginTop: 2 }}>
+                {lineItems.length} {lineItems.length === 1 ? "item" : "items"} added
+              </Text>
+            </View>
             <Pressable
               onPress={addNewItem}
-              className="bg-green-500 rounded px-3 py-2"
+              style={{
+                backgroundColor: "#10b981",
+                borderRadius: 8,
+                paddingHorizontal: 16,
+                paddingVertical: 10,
+                shadowColor: "#000",
+                shadowOffset: { width: 0, height: 2 },
+                shadowOpacity: 0.1,
+                shadowRadius: 3,
+                elevation: 3
+              }}
             >
-              <Text className="text-white font-semibold text-sm">+ Add Item</Text>
+              <Text style={{ color: "white", fontWeight: "600", fontSize: 14 }}>
+                + Add Item
+              </Text>
             </Pressable>
           </View>
 
           {lineItems.length === 0 ? (
-            <View className="bg-slate-100 border border-slate-300 rounded-lg p-6 items-center">
-              <Text className="text-slate-600 text-center mb-4">
-                No items added yet
+            <View style={{ backgroundColor: "#f8fafc", borderRadius: 12, padding: 32, alignItems: "center", justifyContent: "center", borderWidth: 2, borderColor: "#e2e8f0", borderStyle: "dashed" }}>
+              <Text style={{ fontSize: 48, marginBottom: 12 }}>📝</Text>
+              <Text style={{ fontSize: 16, fontWeight: "600", color: "#1e293b", marginBottom: 4, textAlign: "center" }}>
+                No items yet
+              </Text>
+              <Text style={{ fontSize: 13, color: "#64748b", marginBottom: 16, textAlign: "center" }}>
+                Tap "Add Item" to get started
               </Text>
               <Pressable
                 onPress={addNewItem}
-                className="bg-blue-500 rounded px-4 py-2"
+                style={{
+                  backgroundColor: "#3b82f6",
+                  borderRadius: 8,
+                  paddingHorizontal: 24,
+                  paddingVertical: 12
+                }}
               >
-                <Text className="text-white font-semibold">Add First Item</Text>
+                <Text style={{ color: "white", fontWeight: "600", fontSize: 14 }}>
+                  Add First Item
+                </Text>
               </Pressable>
             </View>
           ) : (
-            lineItems.map((item) => (
-              <BillLineItemForm
-                key={item.id}
-                item={item}
-                onUpdate={(updates) => updateLineItem(item.id, updates)}
-                onRemove={() => removeLineItem(item.id)}
-                showRemoveButton={lineItems.length > 1}
-              />
-            ))
+            <View>
+              {lineItems.map((item, index) => (
+                <View key={item.id} style={{ marginBottom: 12 }}>
+                  <Text style={{ fontSize: 12, fontWeight: "600", color: "#64748b", marginBottom: 8 }}>
+                    Item {index + 1}
+                  </Text>
+                  <BillLineItemForm
+                    item={item}
+                    onUpdate={(updates) => updateLineItem(item.id, updates)}
+                    onRemove={() => removeLineItem(item.id)}
+                    showRemoveButton={lineItems.length > 1}
+                  />
+                </View>
+              ))}
+            </View>
           )}
         </View>
 
         {/* Action buttons */}
-        <View className="flex-row gap-2 mb-6">
+        <View style={{ flexDirection: "row", gap: 12, marginBottom: 24 }}>
           <Pressable
             onPress={onCancel}
-            className="flex-1 bg-slate-200 rounded-lg p-4"
+            style={{
+              flex: 1,
+              backgroundColor: "#e2e8f0",
+              borderRadius: 8,
+              paddingVertical: 14,
+              justifyContent: "center",
+              alignItems: "center"
+            }}
           >
-            <Text className="text-center text-slate-900 font-semibold">
+            <Text style={{ textAlign: "center", color: "#1e293b", fontWeight: "600", fontSize: 16 }}>
               Cancel
             </Text>
           </Pressable>
           <Pressable
             onPress={handleReview}
             disabled={lineItems.length === 0}
-            className={`flex-1 rounded-lg p-4 ${
-              lineItems.length === 0 ? "bg-slate-300" : "bg-blue-500"
-            }`}
+            style={{
+              flex: 1,
+              backgroundColor: lineItems.length === 0 ? "#cbd5e1" : "#3b82f6",
+              borderRadius: 8,
+              paddingVertical: 14,
+              justifyContent: "center",
+              alignItems: "center",
+              opacity: lineItems.length === 0 ? 0.6 : 1
+            }}
           >
-            <Text
-              className={`text-center font-semibold ${
-                lineItems.length === 0 ? "text-slate-600" : "text-white"
-              }`}
-            >
-              Next: Review
+            <Text style={{ textAlign: "center", color: "white", fontWeight: "600", fontSize: 16 }}>
+              Next: Review →
             </Text>
           </Pressable>
         </View>
@@ -184,3 +248,4 @@ export function ManualEntryScreen({
     </ScrollView>
   );
 }
+
