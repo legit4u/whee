@@ -277,8 +277,8 @@ export function useSubmitBill(): UseMutationResult<
     {
       onSuccess: () => {
         console.log("[useSubmitBill] Bill submitted successfully, invalidating items cache");
-        // Invalidate items search cache to fetch updated items
-        queryClient.invalidateQueries(["items", "search"]);
+        // Invalidate all items queries (search, price-history, etc.) to fetch updated data
+        queryClient.invalidateQueries({ queryKey: ["items"], exact: false });
       }
     }
   );
