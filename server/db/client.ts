@@ -8,7 +8,10 @@
  * Connection pooling and error handling built-in.
  */
 
-import { Pool, PoolClient, QueryResult } from "pg";
+import pg from "pg";
+import type { PoolClient, QueryResult } from "pg";
+
+const { Pool } = pg;
 
 // Database configuration from environment
 const DB_URL = process.env.DATABASE_URL || process.env.SUPABASE_DB_URL;
@@ -41,7 +44,7 @@ pool.on("error", (err) => {
 /**
  * Execute a query
  */
-export async function query<T = any>(
+export async function query<T extends Record<string, any> = Record<string, any>>(
   text: string,
   values?: (string | number | boolean | null | undefined)[]
 ): Promise<QueryResult<T>> {

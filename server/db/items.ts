@@ -5,7 +5,7 @@
  * Abstracts search logic from API routes.
  */
 
-import { query } from "./client.ts";
+import { query } from "./client";
 
 /**
  * Search for items by name query

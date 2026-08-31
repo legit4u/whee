@@ -6,8 +6,8 @@
  */
 
 import { randomUUID } from "crypto";
-import { query, getClient } from "./client.ts";
-import { BillLineItem, BillSubmitResponse } from "../types.ts";
+import { query, getClient } from "./client";
+import { BillLineItem, BillSubmitResponse } from "../types";
 
 /**
  * Store a bill and its price points
