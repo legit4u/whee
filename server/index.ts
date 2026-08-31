@@ -1,5 +1,6 @@
 import express from "express";
 import type { Express, Request, Response } from "express";
+import pluralize from "pluralize";
 
 const app: Express = express();
 const PORT = process.env.PORT || 3001;
@@ -40,6 +41,14 @@ function generateId(): string {
   });
 }
 
+// Utility: Normalize item names
+// - Converts to lowercase
+// - Singularizes plural forms (e.g., "carrots" → "carrot")
+function normalizeItemName(name: string): string {
+  const lowercase = name.toLowerCase().trim();
+  return pluralize.singular(lowercase);
+}
+
 // Health check
 app.get("/health", (_req: Request, res: Response) => {
   res.json({ status: "ok" });
@@ -63,12 +72,14 @@ app.get("/v1/items/search", (req: Request, res: Response) => {
 
   bills.forEach((bill) => {
     bill.items.forEach((item: any) => {
-      const key = `${item.itemName}-${item.categoryId}`.toLowerCase();
+      // Normalize item name (lowercase, singularize)
+      const normalizedName = normalizeItemName(item.itemName);
+      const key = `${normalizedName}-${item.categoryId}`;
 
       if (!itemsMap[key]) {
         itemsMap[key] = {
           id: `item-${Object.keys(itemsMap).length}`,
-          name: item.itemName,
+          name: normalizedName,
           categoryId: item.categoryId,
           pricePoints: []
         };
@@ -86,11 +97,12 @@ app.get("/v1/items/search", (req: Request, res: Response) => {
     });
   });
 
-  // Filter by search query
+  // Filter by search query (normalize query for plurals)
   let results = Object.values(itemsMap);
   if (query) {
+    const normalizedQuery = pluralize.singular(query);
     results = results.filter((item) =>
-      item.name.toLowerCase().includes(query)
+      item.name.includes(normalizedQuery) || normalizedQuery.includes(item.name)
     );
   }
 
@@ -149,6 +161,12 @@ app.post("/v1/bills", (req: Request, res: Response) => {
     const billId = generateId();
     const pricePointIds = items.map(() => generateId());
 
+    // Normalize item names (lowercase, singularize)
+    const normalizedItems = items.map((item: any) => ({
+      ...item,
+      itemName: normalizeItemName(item.itemName)
+    }));
+
     // Store bill (in-memory; will be database later)
     bills.set(billId, {
       id: billId,
@@ -156,7 +174,7 @@ app.post("/v1/bills", (req: Request, res: Response) => {
       storeLat,
       storeLng,
       purchaseDate,
-      items,
+      items: normalizedItems,
       anonymousDeviceId,
       createdAt: new Date().toISOString()
     });
