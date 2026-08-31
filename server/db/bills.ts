@@ -95,18 +95,28 @@ export async function storeBill(
     console.log(`[DB] Bill stored: ${billId} with ${pricePointIds.length} price points`);
     return { billId, pricePointIds };
   } catch (error) {
-    await client.query("ROLLBACK");
+    try {
+      await client.query("ROLLBACK");
+    } catch (rollbackError) {
+      console.error("[DB] Rollback failed:", rollbackError);
+    }
+    
     const errorMessage = error instanceof Error ? error.message : String(error);
     const errorCode = (error as any)?.code;
     const errorDetail = (error as any)?.detail;
     
-    console.error("[DB] Transaction rolled back due to error");
+    console.error("[DB] Transaction failed");
     console.error("[DB] Error message:", errorMessage);
     console.error("[DB] Error code:", errorCode);
     console.error("[DB] Error detail:", errorDetail);
-    console.error("[DB] Full error:", error);
+    console.error("[DB] Full error object:", JSON.stringify({
+      message: errorMessage,
+      code: errorCode,
+      detail: errorDetail,
+      name: (error as any)?.name
+    }));
     
-    throw error;
+    throw new Error(`Database error: ${errorMessage}${errorDetail ? ` - ${errorDetail}` : ''}`);
   } finally {
     client.release();
   }
