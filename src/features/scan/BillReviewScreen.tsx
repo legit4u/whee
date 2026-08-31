@@ -138,6 +138,7 @@ export function BillReviewScreen({
         style={{ flex: 1, backgroundColor: "#ffffff" }}
         contentContainerStyle={{ flexGrow: 1 }}
         keyboardShouldPersistTaps="always"
+        keyboardDismissMode="on-drag"
       >
         <View style={{ paddingVertical: 20, paddingHorizontal: 16 }}>
         {/* Progress indicator */}
