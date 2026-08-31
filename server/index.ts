@@ -1,6 +1,12 @@
+import "dotenv/config";
 import express from "express";
 import type { Express, Request, Response } from "express";
 import pluralize from "pluralize";
+import { randomUUID } from "crypto";
+import { storeBill } from "./db/bills";
+import { searchItems } from "./db/items";
+import { healthCheck } from "./db/client";
+import type { BillSubmitRequest } from "./types";
 
 const app: Express = express();
 const PORT = process.env.PORT || 3001;
@@ -22,25 +28,6 @@ app.use((req: Request, res: Response, next) => {
   next();
 });
 
-// In-memory storage for testing (will be replaced with database)
-const bills: Map<string, any> = new Map();
-const categories = [
-  { id: "fruits", label: "Fruits", canonicalUnit: "per_100g" },
-  { id: "vegetables", label: "Vegetables", canonicalUnit: "per_100g" },
-  { id: "groceries", label: "Groceries", canonicalUnit: "per_100g" },
-  { id: "dairy", label: "Dairy", canonicalUnit: "per_100ml" },
-  { id: "stationery", label: "Stationery", canonicalUnit: "per_piece" }
-];
-
-// Utility: Generate UUID
-function generateId(): string {
-  return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, function (c) {
-    const r = (Math.random() * 16) | 0;
-    const v = c === "x" ? r : (r & 0x3) | 0x8;
-    return v.toString(16);
-  });
-}
-
 // Utility: Normalize item names
 // - Converts to lowercase
 // - Singularizes plural forms (e.g., "carrots" → "carrot")
@@ -49,9 +36,22 @@ function normalizeItemName(name: string): string {
   return pluralize.singular(lowercase);
 }
 
+// Categories (static data)
+const categories = [
+  { id: "fruits", label: "Fruits", canonicalUnit: "per_100g" },
+  { id: "vegetables", label: "Vegetables", canonicalUnit: "per_100g" },
+  { id: "groceries", label: "Groceries", canonicalUnit: "per_100g" },
+  { id: "dairy", label: "Dairy", canonicalUnit: "per_100ml" },
+  { id: "stationery", label: "Stationery", canonicalUnit: "per_piece" }
+];
+
 // Health check
-app.get("/health", (_req: Request, res: Response) => {
-  res.json({ status: "ok" });
+app.get("/health", async (_req: Request, res: Response) => {
+  const dbHealthy = await healthCheck();
+  res.json({ 
+    status: dbHealthy ? "ok" : "error",
+    database: dbHealthy ? "connected" : "disconnected"
+  });
 });
 
 // ============================================================================
@@ -64,58 +64,22 @@ app.get("/v1/categories", (_req: Request, res: Response) => {
 });
 
 // Items - Search
-app.get("/v1/items/search", (req: Request, res: Response) => {
-  const query = (req.query.q as string || "").toLowerCase();
+app.get("/v1/items/search", async (req: Request, res: Response) => {
+  try {
+    const queryParam = (req.query.q as string) || "";
+    
+    // Normalize search query
+    const normalizedQuery = queryParam ? pluralize.singular(queryParam.toLowerCase()) : "";
 
-  // Aggregate items from all bills
-  const itemsMap: Record<string, any> = {};
+    const result = await searchItems(normalizedQuery);
 
-  bills.forEach((bill) => {
-    bill.items.forEach((item: any) => {
-      // Normalize item name (lowercase, singularize)
-      const normalizedName = normalizeItemName(item.itemName);
-      const key = `${normalizedName}-${item.categoryId}`;
+    console.log(`[GET /v1/items/search] Query: "${queryParam}" returned ${result.total} items`);
 
-      if (!itemsMap[key]) {
-        itemsMap[key] = {
-          id: `item-${Object.keys(itemsMap).length}`,
-          name: normalizedName,
-          categoryId: item.categoryId,
-          pricePoints: []
-        };
-      }
-
-      itemsMap[key].pricePoints.push({
-        normalizedValue: item.normalizedValue,
-        normalizedUnit: item.normalizedUnit,
-        storeName: bill.storeName,
-        purchaseDate: bill.purchaseDate,
-        rawPrice: item.rawPrice,
-        rawUnit: item.rawUnit,
-        rawQuantity: item.rawQuantity
-      });
-    });
-  });
-
-  // Filter by search query (normalize query for plurals)
-  let results = Object.values(itemsMap);
-  if (query) {
-    const normalizedQuery = pluralize.singular(query);
-    results = results.filter((item) =>
-      item.name.includes(normalizedQuery) || normalizedQuery.includes(item.name)
-    );
+    res.json(result);
+  } catch (error) {
+    console.error("[GET /v1/items/search] Error:", error);
+    res.status(500).json({ error: "Failed to search items" });
   }
-
-  // Sort by name
-  results.sort((a, b) => a.name.localeCompare(b.name));
-
-  console.log(`[GET /v1/items/search] Query: "${query}" returned ${results.length} items`);
-
-  res.json({
-    query,
-    items: results,
-    total: results.length
-  });
 });
 
 // Items - Price history
@@ -131,7 +95,7 @@ app.get("/v1/items/:id/nearby-cheaper", (_req: Request, res: Response) => {
 });
 
 // Bills - Submit
-app.post("/v1/bills", (req: Request, res: Response) => {
+app.post("/v1/bills", async (req: Request, res: Response) => {
   try {
     const {
       storeName,
@@ -140,7 +104,7 @@ app.post("/v1/bills", (req: Request, res: Response) => {
       purchaseDate,
       items,
       anonymousDeviceId
-    } = req.body;
+    }: BillSubmitRequest = req.body;
 
     console.log("[POST /v1/bills] Received request body:", JSON.stringify(req.body, null, 2));
 
@@ -157,27 +121,25 @@ app.post("/v1/bills", (req: Request, res: Response) => {
       return;
     }
 
-    // Generate bill ID and price point IDs
-    const billId = generateId();
-    const pricePointIds = items.map(() => generateId());
+    // Generate bill ID
+    const billId = randomUUID();
 
     // Normalize item names (lowercase, singularize)
-    const normalizedItems = items.map((item: any) => ({
+    const normalizedItems = items.map((item) => ({
       ...item,
       itemName: normalizeItemName(item.itemName)
     }));
 
-    // Store bill (in-memory; will be database later)
-    bills.set(billId, {
-      id: billId,
+    // Store bill in database
+    const response = await storeBill(
+      billId,
       storeName,
       storeLat,
       storeLng,
       purchaseDate,
-      items: normalizedItems,
-      anonymousDeviceId,
-      createdAt: new Date().toISOString()
-    });
+      normalizedItems,
+      anonymousDeviceId
+    );
 
     // Log to console for debugging
     console.log(`✓ Bill submitted: ${billId}`);
@@ -185,12 +147,8 @@ app.post("/v1/bills", (req: Request, res: Response) => {
     console.log(`  Items: ${items.length}`);
     console.log(`  Total value: ₹${items.reduce((sum: number, item: any) => sum + (item.rawPrice || 0), 0).toFixed(2)}`);
 
-    const responsePayload = {
-      billId,
-      pricePointIds
-    };
-    console.log("[POST /v1/bills] Sending response:", JSON.stringify(responsePayload));
-    res.json(responsePayload);
+    console.log("[POST /v1/bills] Sending response:", JSON.stringify(response));
+    res.json(response);
   } catch (error) {
     console.error("Error submitting bill:", error);
     res.status(500).json({ error: "Failed to submit bill" });
