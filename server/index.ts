@@ -55,9 +55,55 @@ app.get("/v1/categories", (_req: Request, res: Response) => {
 });
 
 // Items - Search
-app.get("/v1/items/search", (_req: Request, res: Response) => {
-  // TODO: Implement item search endpoint
-  res.status(501).json({ error: "Not implemented" });
+app.get("/v1/items/search", (req: Request, res: Response) => {
+  const query = (req.query.q as string || "").toLowerCase();
+
+  // Aggregate items from all bills
+  const itemsMap: Record<string, any> = {};
+
+  bills.forEach((bill) => {
+    bill.items.forEach((item: any) => {
+      const key = `${item.itemName}-${item.categoryId}`.toLowerCase();
+
+      if (!itemsMap[key]) {
+        itemsMap[key] = {
+          id: `item-${Object.keys(itemsMap).length}`,
+          name: item.itemName,
+          categoryId: item.categoryId,
+          pricePoints: []
+        };
+      }
+
+      itemsMap[key].pricePoints.push({
+        normalizedValue: item.normalizedValue,
+        normalizedUnit: item.normalizedUnit,
+        storeName: bill.storeName,
+        purchaseDate: bill.purchaseDate,
+        rawPrice: item.rawPrice,
+        rawUnit: item.rawUnit,
+        rawQuantity: item.rawQuantity
+      });
+    });
+  });
+
+  // Filter by search query
+  let results = Object.values(itemsMap);
+  if (query) {
+    results = results.filter((item) =>
+      item.name.toLowerCase().includes(query)
+    );
+  }
+
+  // Sort by name
+  results.sort((a, b) => a.name.localeCompare(b.name));
+
+  console.log(`[GET /v1/items/search] Query: "${query}" returned ${results.length} items`);
+
+  res.json({
+    query,
+    items: results,
+    total: results.length
+  });
 });
 
 // Items - Price history

@@ -48,7 +48,22 @@ export interface Category {
 }
 
 export interface ItemSearchResult {
-  items: Item[];
+  query: string;
+  items: Array<{
+    id: string;
+    name: string;
+    categoryId: string;
+    pricePoints: Array<{
+      normalizedValue: number;
+      normalizedUnit: string;
+      storeName: string;
+      purchaseDate: string;
+      rawPrice: number;
+      rawUnit: string;
+      rawQuantity: number;
+    }>;
+  }>;
+  total: number;
 }
 
 export interface PriceHistoryPoint {
@@ -147,21 +162,21 @@ export interface BillReport {
 // ============================================================================
 
 /**
- * Search for items by name.
+ * Search for items by name, or get all items if query is empty.
  */
 export function useItemSearch(
-  query: string,
+  query: string = "",
   enabled: boolean = true
 ): UseQueryResult<ItemSearchResult, Error> {
   return useQuery(
     ["items", "search", query],
     () =>
       apiCall<ItemSearchResult>(
-        `/v1/items/search${buildQueryString({ q: query })}`
+        `/v1/items/search${query ? buildQueryString({ q: query }) : ""}`
       ),
     {
-      enabled: enabled && query.trim().length > 0,
-      staleTime: 5 * 60 * 1000 // 5 minutes
+      enabled: enabled,
+      staleTime: 1 * 60 * 1000 // 1 minute (lower cache time since data changes frequently)
     }
   );
 }
