@@ -1,4 +1,5 @@
-import express, { Express, Request, Response } from "express";
+import express from "express";
+import type { Express, Request, Response } from "express";
 
 const app: Express = express();
 const PORT = process.env.PORT || 3001;
@@ -26,7 +27,7 @@ function generateId(): string {
 }
 
 // Health check
-app.get("/health", (req: Request, res: Response) => {
+app.get("/health", (_req: Request, res: Response) => {
   res.json({ status: "ok" });
 });
 
@@ -35,24 +36,24 @@ app.get("/health", (req: Request, res: Response) => {
 // ============================================================================
 
 // Categories
-app.get("/v1/categories", (req: Request, res: Response) => {
+app.get("/v1/categories", (_req: Request, res: Response) => {
   res.json(categories);
 });
 
 // Items - Search
-app.get("/v1/items/search", (req: Request, res: Response) => {
+app.get("/v1/items/search", (_req: Request, res: Response) => {
   // TODO: Implement item search endpoint
   res.status(501).json({ error: "Not implemented" });
 });
 
 // Items - Price history
-app.get("/v1/items/:id/price-history", (req: Request, res: Response) => {
+app.get("/v1/items/:id/price-history", (_req: Request, res: Response) => {
   // TODO: Implement price history endpoint
   res.status(501).json({ error: "Not implemented" });
 });
 
 // Items - Nearby cheaper
-app.get("/v1/items/:id/nearby-cheaper", (req: Request, res: Response) => {
+app.get("/v1/items/:id/nearby-cheaper", (_req: Request, res: Response) => {
   // TODO: Implement nearby cheaper endpoint
   res.status(501).json({ error: "Not implemented" });
 });
@@ -71,11 +72,13 @@ app.post("/v1/bills", (req: Request, res: Response) => {
 
     // Validate required fields
     if (!storeName || !purchaseDate || !items || !anonymousDeviceId) {
-      return res.status(400).json({ error: "Missing required fields" });
+      res.status(400).json({ error: "Missing required fields" });
+      return;
     }
 
     if (!Array.isArray(items) || items.length === 0) {
-      return res.status(400).json({ error: "Bill must contain at least one item" });
+      res.status(400).json({ error: "Bill must contain at least one item" });
+      return;
     }
 
     // Generate bill ID and price point IDs
@@ -111,7 +114,7 @@ app.post("/v1/bills", (req: Request, res: Response) => {
 });
 
 // Bills - Report
-app.get("/v1/bills/:id/report", (req: Request, res: Response) => {
+app.get("/v1/bills/:id/report", (_req: Request, res: Response) => {
   // TODO: Implement bill report endpoint
   res.status(501).json({ error: "Not implemented" });
 });
@@ -121,12 +124,12 @@ app.get("/v1/bills/:id/report", (req: Request, res: Response) => {
 // ============================================================================
 
 // 404 handler
-app.use((req: Request, res: Response) => {
+app.use((_req: Request, res: Response) => {
   res.status(404).json({ error: "Route not found" });
 });
 
 // Error handler
-app.use((err: any, req: Request, res: Response) => {
+app.use((err: any, _req: Request, res: Response) => {
   console.error(err);
   res.status(500).json({ error: "Internal server error" });
 });
