@@ -2,11 +2,10 @@
 require('dotenv').config({ path: '.env.local' });
 
 const { Pool } = require('pg');
-const { parsePgConnectionString } = require('pg-connection-string');
+const { parse } = require('pg-connection-string');
 
 const DB_URL = process.env.DATABASE_URL;
 console.log('DATABASE_URL loaded:', DB_URL ? 'YES' : 'NO');
-console.log('Full URL:', DB_URL);
 
 if (!DB_URL) {
   console.error('DATABASE_URL not set!');
@@ -14,7 +13,7 @@ if (!DB_URL) {
 }
 
 try {
-  const parsed = parsePgConnectionString(DB_URL);
+  const parsed = parse(DB_URL);
   console.log('Parsed connection config:');
   console.log('  host:', parsed.host);
   console.log('  port:', parsed.port);
@@ -23,6 +22,7 @@ try {
   console.log('  ssl:', parsed.ssl);
 } catch (e) {
   console.error('Failed to parse connection string:', e.message);
+  process.exit(1);
 }
 
 const pool = new Pool({
@@ -66,8 +66,3 @@ pool.connect((err, client, release) => {
   });
 });
 
-// Set timeout
-setTimeout(() => {
-  console.error('Connection timeout after 15 seconds');
-  process.exit(1);
-}, 15000);

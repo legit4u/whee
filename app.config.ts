@@ -18,5 +18,10 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     bundler: "metro",
     output: "server"
   },
-  plugins: []
+  plugins: [
+    "expo-font",
+    "expo-router",
+    "expo-splash-screen",
+    "expo-status-bar"
+  ]
 });
