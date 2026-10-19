@@ -21,18 +21,17 @@ const DB_NAME = process.env.DB_NAME;
 const DB_USER = process.env.DB_USER;
 const DB_PASSWORD = process.env.DB_PASSWORD;
 
-// Use DATABASE_URL if provided (Supabase), otherwise construct from individual vars
-// Note: Supabase uses IPv6-only by default, so we need family: 6
+// Use DATABASE_URL if provided (Supabase), otherwise construct from individual vars.
+// Leave address-family selection to Node so IPv4-compatible pooler endpoints work.
 const connectionConfig = DB_URL
-  ? { connectionString: DB_URL, max: 20, family: 6 }
+  ? { connectionString: DB_URL, max: 20 }
   : {
       host: DB_HOST,
       port: DB_PORT,
       database: DB_NAME,
       user: DB_USER,
       password: DB_PASSWORD,
-      max: 20,
-      family: 6
+      max: 20
     };
 
 // Connection pool

@@ -22,6 +22,7 @@ INSERT INTO categories (id, label, canonical_unit) VALUES
   ('fruits', 'Fruits', 'per_100g'),
   ('vegetables', 'Vegetables', 'per_100g'),
   ('groceries', 'Groceries', 'per_100g'),
+  ('dairy', 'Dairy', 'per_100ml'),
   ('stationery', 'Stationery', 'per_piece')
 ON CONFLICT (id) DO NOTHING;
 
