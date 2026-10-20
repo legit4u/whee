@@ -6,6 +6,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   slug: "whee",
   version: "0.0.1",
   scheme: "whee",
+  icon: "./assets/brand/app-icon.png",
   userInterfaceStyle: "light",
   ios: {
     supportsTablet: true,
@@ -16,12 +17,21 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   },
   web: {
     bundler: "metro",
-    output: "server"
+    output: "server",
+    favicon: "./assets/brand/app-icon.png"
   },
   plugins: [
     "expo-font",
     "expo-router",
-    "expo-splash-screen",
+    [
+      "expo-splash-screen",
+      {
+        image: "./assets/brand/whee-logo.png",
+        imageWidth: 280,
+        resizeMode: "contain",
+        backgroundColor: "#FFFFFF"
+      }
+    ],
     "expo-status-bar"
   ]
 });
